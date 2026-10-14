@@ -6,16 +6,52 @@ const postModel = require("./models/post");
 const cookieParser = require("cookie-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require('crypto');   
+const path = require("path");
+const multerconfig= require("./config/multerconfig");
+
+
+
+
 
 app.set("view engine", "ejs");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(express.static("public"));
+
+
+
+
 
 app.get("/", function (req, res) {
     res.render("index");
 });
+app.get("/test", (req, res) => {
+    res.render("test");
+});
+
+app.get("/profile/Upload", function (req, res) {
+    res.render("profileUpload");
+});
+
+
+app.post("/Upload", isLoggedIn, multerconfig.single("image"), async (req, res) => {
+    if (!req.file) {
+        return res.status(400).send("Please select an image");
+    }
+
+    let user = await userModel.findOneAndUpdate(
+        { email: req.user.email },
+        { profilepic: req.file.filename },
+        { new: true }
+    );
+
+    res.redirect("/profile");
+});
+
+
 app.get("/register", function(req, res) {
     res.render("register");
 });
